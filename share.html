@@ -31,6 +31,12 @@
             width: 100%;
         }
 
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
         .code-display {
             background: #f8fafc;
             padding: 25px;
@@ -60,6 +66,12 @@
             cursor: pointer;
             margin: 5px;
             width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .btn-success {
@@ -69,6 +81,8 @@
         .btn:disabled {
             background: #94a3b8;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .notification {
@@ -82,10 +96,86 @@
             z-index: 1000;
             background: linear-gradient(135deg, #10b981, #059669);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            max-width: 400px;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
         }
 
         .hidden {
             display: none;
+        }
+
+        .ad-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 10px;
+            border: 2px dashed #0ea5e9;
+        }
+
+        .ad-content {
+            text-align: center;
+        }
+
+        .ad-title {
+            color: #0369a1;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ad-description {
+            color: #475569;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .ad-button {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .code-display {
+                padding: 20px;
+                font-size: 16px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -96,91 +186,194 @@
         <h1>🎁 كود الخصم</h1>
         
         <div id="codeContainer">
-            <div class="code-display" id="codeValue">جاري تحميل الكود...</div>
+            <div class="code-display" id="codeValue">
+                <span class="loading"></span>جاري تحميل الكود...
+            </div>
             <div class="timer" id="timerInfo"></div>
-            <button class="btn btn-success" onclick="copyCode()">📋 نسخ الكود</button>
+            <button class="btn btn-success" onclick="copyCode()" id="copyButton">📋 نسخ الكود</button>
+            
+            <!-- إعلان مخصص -->
+            <div class="ad-container">
+                <div class="ad-content">
+                    <div class="ad-title">🚀 عرض خاص!</div>
+                    <div class="ad-description">احصل على خصم إضافي 20% على جميع المنتجات باستخدام كود: EXTRA20</div>
+                    <button class="ad-button" onclick="openStore()">🛒 تسوق الآن</button>
+                </div>
+            </div>
         </div>
 
         <div id="errorContainer" class="hidden">
-            <div style="color: #ef4444; margin: 20px 0;">
-                <h2>❌ خطأ</h2>
-                <p id="errorMessage"></p>
+            <div style="color: #ef4444; margin: 20px 0; text-align: center;">
+                <h2 style="margin-bottom: 10px;">❌ خطأ</h2>
+                <p id="errorMessage" style="font-size: 16px; line-height: 1.5;"></p>
             </div>
+            <button class="btn" onclick="retryLoading()">🔄 إعادة المحاولة</button>
         </div>
     </div>
 
     <script src="script.js"></script>
     <script>
+        let currentCodeId = '';
+
         async function loadCode() {
             const urlParams = new URLSearchParams(window.location.search);
-            const codeId = urlParams.get('id');
+            currentCodeId = urlParams.get('id');
 
-            if (!codeId) {
-                showError('لم يتم العثور على الكود المطلوب');
+            console.log('🔍 جلب الكود بالمعرف:', currentCodeId);
+
+            if (!currentCodeId) {
+                showError('لم يتم العثور على الكود المطلوب - الرابط غير صالح');
                 return;
             }
 
             try {
-                const accessCheck = TIMER.canUserAccessCode(codeId);
+                // إظهار حالة التحميل
+                document.getElementById('codeValue').innerHTML = '<span class="loading"></span>جاري تحميل الكود...';
+                document.getElementById('copyButton').disabled = true;
+
+                const accessCheck = TIMER.canUserAccessCode(currentCodeId);
                 
                 if (!accessCheck.allowed) {
                     const hours = Math.floor(accessCheck.remainingTime / (1000 * 60 * 60));
                     const minutes = Math.floor((accessCheck.remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-                    showError(`يمكنك استخدام هذا الكود مرة أخرى بعد: ${hours} ساعة و ${minutes} دقيقة`);
+                    showError(`⏳ يمكنك استخدام هذا الكود مرة أخرى بعد:<br>${hours} ساعة و ${minutes} دقيقة`, 'warning');
                     return;
                 }
 
-                const code = await CODES_API.getCodeById(codeId);
+                const code = await CODES_API.getCodeById(currentCodeId);
                 
                 if (!code) {
                     showError('الكود غير موجود أو تم حذفه');
                     return;
                 }
 
+                // عرض الكود
                 document.getElementById('codeValue').textContent = code.value;
+                document.getElementById('copyButton').disabled = false;
                 
-                code.usageCount = (code.usageCount || 0) + 1;
-                await CODES_API.updateCode(codeId, code);
+                // تحديث عداد الاستخدام في الخادم
+                const usageUpdated = await CODES_API.updateUsage(currentCodeId);
+                if (usageUpdated) {
+                    console.log('✅ تم تحديث عداد الاستخدام');
+                }
                 
-                TIMER.recordUsage(codeId);
+                // تسجيل الاستخدام محلياً
+                TIMER.recordUsage(currentCodeId);
                 
-                showNotification('تم تحميل الكود بنجاح!');
+                showNotification('✅ تم تحميل الكود بنجاح!');
 
             } catch (error) {
-                console.error('Error loading code:', error);
-                showError('حدث خطأ في تحميل الكود');
+                console.error('❌ خطأ في تحميل الكود:', error);
+                showError('حدث خطأ في تحميل الكود - حاول تحديث الصفحة');
             }
         }
 
         function copyCode() {
             const codeValue = document.getElementById('codeValue').textContent;
+            const copyButton = document.getElementById('copyButton');
+            
+            // تعطيل الزر مؤقتاً
+            copyButton.disabled = true;
+            copyButton.innerHTML = '✅ تم النسخ';
+            
             navigator.clipboard.writeText(codeValue).then(() => {
-                showNotification('تم نسخ الكود إلى الحافظة!');
+                showNotification('✅ تم نسخ الكود إلى الحافظة!');
+                
+                // إعادة تفعيل الزر بعد ثانيتين
+                setTimeout(() => {
+                    copyButton.disabled = false;
+                    copyButton.innerHTML = '📋 نسخ الكود';
+                }, 2000);
             }).catch(() => {
-                showNotification('فشل نسخ الكود', 'error');
+                showNotification('❌ فشل نسخ الكود', 'error');
+                copyButton.disabled = false;
+                copyButton.innerHTML = '📋 نسخ الكود';
             });
         }
 
-        function showError(message) {
+        function showError(message, type = 'error') {
             document.getElementById('codeContainer').classList.add('hidden');
             document.getElementById('errorContainer').classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorMessage').innerHTML = message;
+        }
+
+        function retryLoading() {
+            document.getElementById('errorContainer').classList.add('hidden');
+            document.getElementById('codeContainer').classList.remove('hidden');
+            loadCode();
         }
 
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.style.background = type === 'success' ? 
-                'linear-gradient(135deg, #10b981, #059669)' : 
-                'linear-gradient(135deg, #ef4444, #dc2626)';
+            notification.className = 'notification';
+            
+            if (type === 'error') {
+                notification.classList.add('error');
+            } else if (type === 'warning') {
+                notification.classList.add('warning');
+            }
+            
             notification.classList.remove('hidden');
             
             setTimeout(() => {
                 notification.classList.add('hidden');
-            }, 3000);
+            }, 4000);
         }
 
-        document.addEventListener('DOMContentLoaded', loadCode);
+        function openStore() {
+            // يمكنك تغيير الرابط إلى متجرك الحقيقي
+            window.open('https://example.com', '_blank');
+        }
+
+        // تحميل الكود عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCode();
+            
+            // إضافة تأثيرات عند التحميل
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // إضافة تأثيرات CSS عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .container {
+                    opacity: 0;
+                    transform: translateY(20px);
+                    transition: all 0.5s ease;
+                }
+                
+                .code-display {
+                    transition: all 0.3s ease;
+                }
+                
+                .code-display:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // إمكانية استخدام Ctrl+C لنسخ الكود
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                if (document.getElementById('codeValue').textContent !== 'جاري تحميل الكود...') {
+                    copyCode();
+                }
+            }
+        });
+
+        // تحديث تلقائي عند العودة للصفحة
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // الصفحة أصبحت مرئية، يمكن تحديث البيانات إذا لزم الأمر
+            }
+        });
     </script>
 </body>
 </html>
