@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف - نظام الأكواد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .login-section {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            margin: 50px auto;
+            width: 95%;
+        }
+
+        .login-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .login-section input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .login-section button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .admin-panel {
+            background: white;
+            padding: 20px 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .admin-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .admin-header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            align-self: center;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            padding: 20px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e6ed;
+            width: 100%;
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        }
+
+        .share-link {
+            margin-top: 20px;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 10px;
+            border: 2px dashed #0ea5e9;
+        }
+
+        .share-link input {
+            background: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .search-section {
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-buttons button {
+            flex: 1;
+        }
+
+        .search-results {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .codes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .code-item {
+            background: white;
+            padding: 20px 15px;
+            border-radius: 10px;
+            border: 1px solid #e0e6ed;
+            transition: all 0.3s;
+        }
+
+        .code-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .code-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .code-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            word-break: break-word;
+        }
+
+        .code-id {
+            font-size: 11px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .code-value {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 12px 0;
+            border: 1px dashed #cbd5e1;
+            color: #e83e8c;
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .code-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            margin: 8px 0;
+            text-align: center;
+        }
+
+        .code-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .code-actions button {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .edit-form {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 12px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .edit-form input {
+            margin-bottom: 10px;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-actions button {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .login-section {
+                padding: 40px;
+                margin: 100px auto;
+            }
+
+            .admin-panel {
+                padding: 30px 25px;
+            }
+
+            .admin-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .admin-header h1 {
+                font-size: 28px;
+                text-align: right;
+            }
+
+            .card {
+                padding: 25px 20px;
+            }
+
+            .card h3 {
+                font-size: 20px;
+                text-align: right;
+            }
+
+            .form-group {
+                grid-template-columns: 1fr 1fr;
+                display: grid;
+            }
+
+            .search-box {
+                flex-direction: row;
+            }
+
+            .search-buttons {
+                flex-direction: row;
+                width: auto;
+            }
+
+            .search-buttons button {
+                width: auto;
+            }
+
+            .code-actions {
+                flex-direction: row;
+            }
+
+            .notification {
+                right: 20px;
+                left: auto;
+                max-width: 400px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .codes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 20px;
+            }
+
+            .code-item {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification hidden"></div>
+
+    <div class="container">
+        <div id="loginSection" class="login-section">
+            <h2>🔐 دخول المشرف</h2>
+            <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور">
+            <button onclick="login()">دخول إلى لوحة التحكم</button>
+        </div>
+
+        <div id="adminPanel" class="admin-panel hidden">
+            <div class="admin-header">
+                <h1>لوحة تحكم نظام الأكواد</h1>
+                <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+            </div>
+
+            <div class="card">
+                <h3>➕ إنشاء كود جديد</h3>
+                <div class="form-group">
+                    <input type="text" id="codeName" placeholder="اسم الكود (للعرض في لوحة التحكم فقط)">
+                    <input type="text" id="codeValue" placeholder="نص الكود (سيظهر للمستخدمين)">
+                </div>
+                <button onclick="generateCode()">🎯 إنشاء الكود ورابط المشاركة</button>
+            </div>
+
+            <div id="shareSection" class="share-link hidden">
+                <h3>🔗 رابط المشاركة</h3>
+                <input type="text" id="shareUrl" readonly>
+                <div style="display: flex; gap: 10px; flex-direction: column;">
+                    <button onclick="copyShareUrl()">📋 نسخ الرابط</button>
+                    <button class="btn-success" onclick="openSharePage()">👁️ معاينة الصفحة</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 الأكواد المنشأة</h3>
+                
+                <div class="search-section">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 ابحث عن كود بالاسم، النص، أو المعرف...">
+                        <div class="search-buttons">
+                            <button class="btn-info" onclick="searchCodes()">بحث</button>
+                            <button onclick="clearSearch()">مسح</button>
+                        </div>
+                    </div>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+
+                <div class="codes-grid" id="codesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const ADMIN_PASSWORD = "7X1234";
+        let allCodes = {};
+        let currentSearchTerm = '';
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? 
+                'linear-gradient(135deg, #10b981, #059669)' : 
+                type === 'error' ? 
+                'linear-gradient(135deg, #ef4444, #dc2626)' : 
+                'linear-gradient(135deg, #f59e0b, #d97706)';
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        async function login() {
+            const passwordInput = document.getElementById('adminPassword');
+            if (!passwordInput) return;
+            
+            const password = passwordInput.value;
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                showAdminPanel();
+                showNotification('مرحباً بك في لوحة التحكم!');
+            } else {
+                showNotification('كلمة المرور غير صحيحة', 'error');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_logged_in');
+            showLoginSection();
+            showNotification('تم تسجيل الخروج بنجاح', 'warning');
+        }
+
+        function showLoginSection() {
+            const loginSection = document.getElementById('loginSection');
+            const adminPanel = document.getElementById('adminPanel');
+            if (loginSection && adminPanel) {
+                loginSection.classList.remove('hidden');
+                adminPanel.classList.add('hidden');
+            }
+        }
+
+        async function showAdminPanel() {
+            const loginSection = document.getElementById('loginSection');
+            const adminPanel = document.getElementById('adminPanel');
+            if (loginSection && adminPanel) {
+                loginSection.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+                await loadAllCodes();
+            }
+        }
+
+        async function loadAllCodes() {
+            try {
+                allCodes = await CODES_API.getCodes();
+                console.log('All codes loaded:', allCodes);
+                await loadCodesList();
+            } catch (error) {
+                console.error('Error loading all codes:', error);
+                showNotification('خطأ في تحميل الأكواد', 'error');
+            }
+        }
+
+        async function generateCode() {
+            const nameInput = document.getElementById('codeName');
+            const valueInput = document.getElementById('codeValue');
+            
+            if (!nameInput || !valueInput) return;
+            
+            const name = nameInput.value.trim();
+            const value = valueInput.value.trim();
+
+            if (!name || !value) {
+                showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+
+            try {
+                const codeId = await CODES_API.createCode({ name, value });
+
+                if (codeId) {
+                    allCodes = await CODES_API.getCodes();
+                    
+                    const shareUrl = `share.html?id=${codeId}`;
+                    
+                    const shareUrlInput = document.getElementById('shareUrl');
+                    const shareSection = document.getElementById('shareSection');
+                    if (shareUrlInput && shareSection) {
+                        shareUrlInput.value = window.location.href.replace('index.html', '') + shareUrl;
+                        shareSection.classList.remove('hidden');
+                    }
+                    
+                    nameInput.value = '';
+                    valueInput.value = '';
+                    
+                    await loadCodesList();
+                    showNotification('تم إنشاء الكود بنجاح!');
+                } else {
+                    showNotification('حدث خطأ في إنشاء الكود', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating code:', error);
+                showNotification('حدث خطأ في إنشاء الكود', 'error');
+            }
+        }
+
+        async function loadCodesList(codesToShow = null) {
+            const codesList = document.getElementById('codesList');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (!codesList || !searchResults) return;
+            
+            const codes = codesToShow || allCodes;
+            
+            if (Object.keys(codes).length === 0) {
+                codesList.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 40px;">لا توجد أكواد منشأة بعد</p>';
+                searchResults.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            for (const [codeId, code] of Object.entries(codes)) {
+                const shareUrl = window.location.href.replace('index.html', '') + `share.html?id=${codeId}`;
+                
+                html += `
+                    <div class="code-item" id="code-${codeId}">
+                        <div class="code-header">
+                            <span class="code-title">${code.name || 'بدون اسم'}</span>
+                            <span class="code-id">${codeId.substring(0, 8)}...</span>
+                        </div>
+                        <div class="code-value">${code.value || 'بدون قيمة'}</div>
+                        <div class="code-meta">
+                            🕒 ${new Date(code.createdAt || Date.now()).toLocaleString('ar-SA')}
+                            ${code.usageCount > 0 ? ` • 🔄 ${code.usageCount} استخدام` : ''}
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-warning" onclick="showEditForm('${codeId}')">✏️ تعديل</button>
+                            <button class="btn-danger" onclick="deleteCode('${codeId}')">🗑️ حذف</button>
+                            <button onclick="copyCodeLink('${shareUrl}')">📋 نسخ الرابط</button>
+                        </div>
+                    </div>
+                `;
+            }
+            codesList.innerHTML = html;
+            
+            if (codesToShow) {
+                const count = Object.keys(codesToShow).length;
+                const total = Object.keys(allCodes).length;
+                searchResults.innerHTML = 
+                    `عرض ${count} من ${total} كود ${currentSearchTerm ? `للبحث: "${currentSearchTerm}"` : ''}`;
+            } else {
+                searchResults.innerHTML = 
+                    `عرض جميع الأكواد (${Object.keys(codes).length} كود)`;
+            }
+        }
+
+        async function searchCodes() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            
+            const searchTerm = searchInput.value.trim();
+            currentSearchTerm = searchTerm;
+            
+            try {
+                const results = await CODES_API.searchCodes(searchTerm);
+                await loadCodesList(results);
+            } catch (error) {
+                console.error('Error searching codes:', error);
+                showNotification('خطأ في البحث', 'error');
+            }
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            currentSearchTerm = '';
+            loadCodesList();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchCodes();
+                    }
+                });
+            }
+        });
+
+        async function showEditForm(codeId) {
+            const code = allCodes[codeId];
+            
+            if (!code) {
+                showNotification('الكود غير موجود', 'error');
+                return;
+            }
+
+            const codeElement = document.getElementById(`code-${codeId}`);
+            if (!codeElement) return;
+            
+            const actions = codeElement.querySelector('.code-actions');
+            if (actions) {
+                actions.style.display = 'none';
+            }
+            
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-form';
+            editForm.innerHTML = `
+                <h4 style="margin-bottom: 15px; color: #475569;">✏️ تعديل الكود</h4>
+                <input type="text" id="editName-${codeId}" value="${code.name || ''}" placeholder="اسم الكود">
+                <input type="text" id="editValue-${codeId}" value="${code.value || ''}" placeholder="نص الكود">
+                <div class="edit-actions">
+                    <button class="btn-success" onclick="updateCode('${codeId}')">💾 حفظ</button>
+                    <button class="btn-danger" onclick="cancelEdit('${codeId}')">❌ إلغاء</button>
+                </div>
+            `;
+            
+            codeElement.appendChild(editForm);
+        }
+
+        async function updateCode(codeId) {
+            const nameInput = document.getElementById(`editName-${codeId}`);
+            const valueInput = document.getElementById(`editValue-${codeId}`);
+            
+            if (!nameInput || !valueInput) return;
+            
+            const name = nameInput.value.trim();
+            const value = valueInput.value.trim();
+
+            if (!name || !value) {
+                showNotification('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+
+            try {
+                const updated = await CODES_API.updateCode(codeId, { name, value });
+
+                if (updated) {
+                    allCodes = await CODES_API.getCodes();
+                    await loadCodesList();
+                    showNotification('تم تحديث الكود بنجاح!');
+                } else {
+                    showNotification('حدث خطأ في تحديث الكود', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating code:', error);
+                showNotification('حدث خطأ في تحديث الكود', 'error');
+            }
+        }
+
+        function cancelEdit(codeId) {
+            loadCodesList();
+        }
+
+        async function deleteCode(codeId) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكود؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                return;
+            }
+            
+            try {
+                const deleted = await CODES_API.deleteCode(codeId);
+                
+                if (deleted) {
+                    allCodes = await CODES_API.getCodes();
+                    await loadCodesList();
+                    showNotification('تم حذف الكود بنجاح');
+                } else {
+                    showNotification('حدث خطأ في حذف الكود', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting code:', error);
+                showNotification('حدث خطأ في حذف الكود', 'error');
+            }
+        }
+
+        function copyCodeLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showNotification('تم نسخ رابط الكود إلى الحافظة');
+            }).catch(() => {
+                showNotification('فشل نسخ الرابط', 'error');
+            });
+        }
+
+        function copyShareUrl() {
+            const shareUrl = document.getElementById('shareUrl');
+            if (!shareUrl) return;
+            
+            shareUrl.select();
+            navigator.clipboard.writeText(shareUrl.value).then(() => {
+                showNotification('تم نسخ الرابط إلى الحافظة');
+            }).catch(() => {
+                showNotification('فشل نسخ الرابط', 'error');
+            });
+        }
+
+        function openSharePage() {
+            const shareUrl = document.getElementById('shareUrl');
+            if (shareUrl && shareUrl.value) {
+                window.open(shareUrl.value, '_blank');
+            }
+        }
+
+        async function initialize() {
+            try {
+                if (sessionStorage.getItem('admin_logged_in') === 'true') {
+                    await showAdminPanel();
+                } else {
+                    showLoginSection();
+                }
+            } catch (error) {
+                console.error('Error initializing:', error);
+                showLoginSection();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

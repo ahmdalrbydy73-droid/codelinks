@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض الكود</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .code-display {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e83e8c;
+            word-break: break-all;
+        }
+
+        .timer {
+            color: #64748b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            width: 100%;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification hidden"></div>
+
+    <div class="container">
+        <h1>🎁 كود الخصم</h1>
+        
+        <div id="codeContainer">
+            <div class="code-display" id="codeValue">جاري تحميل الكود...</div>
+            <div class="timer" id="timerInfo"></div>
+            <button class="btn btn-success" onclick="copyCode()">📋 نسخ الكود</button>
+        </div>
+
+        <div id="errorContainer" class="hidden">
+            <div style="color: #ef4444; margin: 20px 0;">
+                <h2>❌ خطأ</h2>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        async function loadCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeId = urlParams.get('id');
+
+            if (!codeId) {
+                showError('لم يتم العثور على الكود المطلوب');
+                return;
+            }
+
+            try {
+                const accessCheck = TIMER.canUserAccessCode(codeId);
+                
+                if (!accessCheck.allowed) {
+                    const hours = Math.floor(accessCheck.remainingTime / (1000 * 60 * 60));
+                    const minutes = Math.floor((accessCheck.remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                    showError(`يمكنك استخدام هذا الكود مرة أخرى بعد: ${hours} ساعة و ${minutes} دقيقة`);
+                    return;
+                }
+
+                const code = await CODES_API.getCodeById(codeId);
+                
+                if (!code) {
+                    showError('الكود غير موجود أو تم حذفه');
+                    return;
+                }
+
+                document.getElementById('codeValue').textContent = code.value;
+                
+                code.usageCount = (code.usageCount || 0) + 1;
+                await CODES_API.updateCode(codeId, code);
+                
+                TIMER.recordUsage(codeId);
+                
+                showNotification('تم تحميل الكود بنجاح!');
+
+            } catch (error) {
+                console.error('Error loading code:', error);
+                showError('حدث خطأ في تحميل الكود');
+            }
+        }
+
+        function copyCode() {
+            const codeValue = document.getElementById('codeValue').textContent;
+            navigator.clipboard.writeText(codeValue).then(() => {
+                showNotification('تم نسخ الكود إلى الحافظة!');
+            }).catch(() => {
+                showNotification('فشل نسخ الكود', 'error');
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('codeContainer').classList.add('hidden');
+            document.getElementById('errorContainer').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? 
+                'linear-gradient(135deg, #10b981, #059669)' : 
+                'linear-gradient(135deg, #ef4444, #dc2626)';
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCode);
+    </script>
+</body>
+</html>
